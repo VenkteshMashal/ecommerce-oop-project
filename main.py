@@ -1,23 +1,27 @@
 from database.connection import create_tables
-from services.auth_service import AuthService
+from services.product_service import ProductService
 
 if __name__ == "__main__":
     create_tables()
 
-    print("\n1. Register")
-    success, message = AuthService.register_user(
-        name="Venktesh",
-        email="venktesh@example.com",
-        password="12345",
-        role="customer"
-    )
-    print(message)
-
-    print("\n2. Login")
-    success, message, user = AuthService.login_user(
-        email="venktesh@example.com",
-        password="12345"
+    success, message = ProductService.add_product(
+        name="Laptop",
+        category="Electronics",
+        price=55000,
+        stock=10,
+        description="Dell business laptop"
     )
 
     print(message)
-    print(user)
+
+    products = ProductService.get_all_products()
+
+    print("\nProducts:")
+    for product in products:
+        print(
+            product["product_id"],
+            product["name"],
+            product["category"],
+            product["price"],
+            product["stock"]
+        )
