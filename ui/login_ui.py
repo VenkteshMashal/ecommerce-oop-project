@@ -3,7 +3,7 @@ from tkinter import messagebox
 from services.auth_service import AuthService
 from ui.register_ui import RegisterUI
 from utils.theme import Theme
-
+from ui.customer_ui import CustomerDashboard
 
 class LoginUI(ctk.CTk):
     def __init__(self):
@@ -109,6 +109,10 @@ class LoginUI(ctk.CTk):
 
         if success:
             messagebox.showinfo("Success", f"Welcome {user['name']}")
-            print(user)
+
+            if user["role"] == "customer":
+                CustomerDashboard(user)
+            else:
+                messagebox.showinfo("Admin", "Admin dashboard coming soon.")
         else:
             messagebox.showerror("Login Failed", message)
