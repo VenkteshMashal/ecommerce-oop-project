@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from services.auth_service import AuthService
+from ui.register_ui import RegisterUI
 
 
 class LoginUI(ctk.CTk):
@@ -56,6 +57,20 @@ class LoginUI(ctk.CTk):
             command=self.login
         )
         login_btn.pack(pady=25)
+
+        register_btn = ctk.CTkButton(
+            self,
+            text="Create New Account",
+            width=300,
+            height=40,
+            fg_color="transparent",
+            border_width=1,
+            command=self.open_register_window
+        )
+        register_btn.pack(pady=5)
+
+    def open_register_window(self):
+        RegisterUI()
 
     def login(self):
         email = self.email_entry.get()
