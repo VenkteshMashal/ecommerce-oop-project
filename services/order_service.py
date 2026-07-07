@@ -1,17 +1,26 @@
 from database.connection import get_connection
 from services.cart_service import CartService
 from models.order import Order
+from services.payment_service import PaymentService
 
 class OrderService:
 
     @staticmethod
     def place_order(user_id, payment_method):
         cart_items = CartService.get_cart_items(user_id)
-
+        
         if not cart_items:
             return False, "Cart is empty.", None
 
         total_amount = CartService.get_cart_total(user_id)
+        payment_success, payment_message = PaymentService.process_payment(
+            payment_method,
+            total_amount
+        )
+
+        if not payment_success:
+            return False, payment_message, None
+
         order = Order(user_id, total_amount, payment_method)
 
         conn = get_connection()
