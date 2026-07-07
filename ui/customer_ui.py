@@ -10,7 +10,6 @@ class CustomerDashboard(ctk.CTkToplevel):
         super().__init__()
 
         self.user = user
-
         self.title("ShopEase - Customer Dashboard")
         self.geometry("900x600")
         self.resizable(False, False)
@@ -23,12 +22,7 @@ class CustomerDashboard(ctk.CTkToplevel):
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False)
 
-        title = ctk.CTkLabel(
-            sidebar,
-            text="🛒 ShopEase",
-            font=("Arial", 24, "bold"),
-            text_color=Theme.TEXT_COLOR
-        )
+        title = ctk.CTkLabel(sidebar, text="🛒 ShopEase", font=("Arial", 24, "bold"))
         title.pack(pady=(30, 10))
 
         user_label = ctk.CTkLabel(
@@ -53,7 +47,6 @@ class CustomerDashboard(ctk.CTkToplevel):
                 width=170,
                 height=40,
                 font=Theme.FONT_BUTTON,
-                corner_radius=10,
                 fg_color=Theme.PRIMARY_COLOR,
                 hover_color=Theme.HOVER_COLOR,
                 command=command
@@ -120,23 +113,13 @@ class CustomerDashboard(ctk.CTkToplevel):
         scroll_frame.pack(pady=10)
 
         for product in products:
-            card = ctk.CTkFrame(
-                scroll_frame,
-                width=580,
-                height=120,
-                corner_radius=12,
-                fg_color=Theme.CARD_COLOR
-            )
+            card = ctk.CTkFrame(scroll_frame, height=120, corner_radius=12, fg_color=Theme.CARD_COLOR)
             card.pack(pady=10, padx=10, fill="x")
             card.pack_propagate(False)
 
             info = ctk.CTkLabel(
                 card,
-                text=(
-                    f"{product['name']}\n"
-                    f"Category: {product['category']}\n"
-                    f"Price: ₹{product['price']} | Stock: {product['stock']}"
-                ),
+                text=f"{product['name']}\nCategory: {product['category']}\nPrice: ₹{product['price']} | Stock: {product['stock']}",
                 font=Theme.FONT_NORMAL,
                 text_color=Theme.TEXT_COLOR,
                 justify="left"
@@ -156,11 +139,7 @@ class CustomerDashboard(ctk.CTkToplevel):
             btn.pack(side="right", padx=20)
 
     def add_product_to_cart(self, product_id):
-        quantity = simpledialog.askinteger(
-            "Quantity",
-            "Enter quantity:",
-            minvalue=1
-        )
+        quantity = simpledialog.askinteger("Quantity", "Enter quantity:", minvalue=1)
 
         if quantity is None:
             return
@@ -173,19 +152,87 @@ class CustomerDashboard(ctk.CTkToplevel):
 
         if success:
             messagebox.showinfo("Success", message)
+            self.show_cart()
         else:
             messagebox.showerror("Error", message)
 
     def show_cart(self):
         self.clear_content()
 
-        label = ctk.CTkLabel(
+        title = ctk.CTkLabel(
             self.content,
-            text="Cart page coming next",
-            font=("Arial", 24, "bold"),
+            text="My Cart",
+            font=("Arial", 26, "bold"),
             text_color=Theme.TEXT_COLOR
         )
-        label.pack(pady=100)
+        title.pack(pady=(25, 15))
+
+        cart_items = CartService.get_cart_items(self.user["user_id"])
+
+        if not cart_items:
+            label = ctk.CTkLabel(
+                self.content,
+                text="Your cart is empty.",
+                font=Theme.FONT_SUBTITLE,
+                text_color=Theme.SUBTEXT_COLOR
+            )
+            label.pack(pady=50)
+            return
+
+        scroll_frame = ctk.CTkScrollableFrame(
+            self.content,
+            width=620,
+            height=380,
+            fg_color=Theme.BG_COLOR
+        )
+        scroll_frame.pack(pady=10)
+
+        for item in cart_items:
+            card = ctk.CTkFrame(scroll_frame, height=100, corner_radius=12, fg_color=Theme.CARD_COLOR)
+            card.pack(pady=10, padx=10, fill="x")
+            card.pack_propagate(False)
+
+            info = ctk.CTkLabel(
+                card,
+                text=f"{item['name']}\nPrice: ₹{item['price']} | Qty: {item['quantity']}\nTotal: ₹{item['total_price']}",
+                font=Theme.FONT_NORMAL,
+                text_color=Theme.TEXT_COLOR,
+                justify="left"
+            )
+            info.pack(side="left", padx=20)
+
+            remove_btn = ctk.CTkButton(
+                card,
+                text="Remove",
+                width=110,
+                height=35,
+                fg_color="#991b1b",
+                hover_color="#7f1d1d",
+                command=lambda p_id=item["product_id"]: self.remove_cart_item(p_id)
+            )
+            remove_btn.pack(side="right", padx=20)
+
+        total = CartService.get_cart_total(self.user["user_id"])
+
+        total_label = ctk.CTkLabel(
+            self.content,
+            text=f"Cart Total: ₹{total}",
+            font=("Arial", 20, "bold"),
+            text_color=Theme.TEXT_COLOR
+        )
+        total_label.pack(pady=10)
+
+    def remove_cart_item(self, product_id):
+        success, message = CartService.remove_from_cart(
+            user_id=self.user["user_id"],
+            product_id=product_id
+        )
+
+        if success:
+            messagebox.showinfo("Success", message)
+            self.show_cart()
+        else:
+            messagebox.showerror("Error", message)
 
     def show_orders(self):
         self.clear_content()
